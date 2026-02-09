@@ -1,0 +1,31 @@
+[tool.poetry]
+name = "statsforecast-diy"
+version = "0.1.0"
+description = "DIY statsforecast project"
+authors = ["jack rodenberg <jack.rodenberg@noodle.ai>"]
+readme = "README.md"
+packages = []
+
+[tool.poetry.dependencies]
+python = "^3.11"
+pandas = "*"
+numpy = "*"
+scikit-learn = "*"
+statsmodels = "*"
+jupyter = "*"
+ipywidgets = "*"
+tqdm = "*"
+joblib = "*"
+requests = "*"
+python-dotenv = "*"
+statsforecast = "*"
+polars = "*"
+prophet = "*"
+pydlm = "*"
+nixtla = "*"
+utilsforecast = "*"
+datasetsforecast = "^1.0.0"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
