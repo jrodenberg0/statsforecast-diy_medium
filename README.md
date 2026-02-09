@@ -1,68 +1,112 @@
-# StatsForecast DIY - M5 Forecasting
+# M5 Forecasting - DIY StatsForecast
 
-Build and test forecasting models on the M5 dataset using StatsForecast and NeuralForecast.
+Training and evaluating forecasting models on the M5 dataset using StatsForecast with time series decomposition approaches via PyDLM.
 
-## Structure
+## Overview
 
-```
-statsforecast_DIY/
-├── m5_training.ipynb           # Main M5 training notebook
-├── README.md                    # This file
-├── requirements.txt             # Dependencies
-├── .gitignore                   # Git ignores
-├── data/                        # M5 data (optional local copy)
-│   └── sales_train_validation.csv
-└── results/                     # Output directory (auto-created)
-    ├── forecasts_vs_actuals.csv
-    ├── model_scores.csv
-    └── raw_forecasts.csv
-```
+This project implements and compares classical statistical forecasting models on the M5 Kaggle competition dataset. It demonstrates various approaches to weekly sales forecasting, including:
+- Seasonal naive baselines
+- Exponential smoothing
+- Dynamic Linear Models (PyDLM) with different components (level, trend, seasonal)
 
 ## Quick Start
 
-1. **Prepare M5 data**: Download from [Kaggle M5 Forecasting](https://www.kaggle.com/competitions/m5-forecasting-accuracy) and place in `./data/`
-2. **Update data path** in cell 3 if needed
-3. **Select models** in cell 5 (StatsForecast and/or NeuralForecast)
-4. **Run the notebook** to train and evaluate
+### Setup
+```bash
+# Install dependencies
+pip install -r requirements.txt
+# or with poetry
+poetry install
+
+# Create data directory
+mkdir -p data
+```
+
+### Run the Notebook
+```bash
+jupyter notebook m5_training.ipynb
+```
+
+The notebook will automatically:
+1. Download M5 dataset from `datasetsforecast.m5`
+2. Aggregate daily sales to weekly frequency (W-SAT)
+3. Train models using cross-validation (4 windows, 13-step horizon)
+4. Evaluate and visualize performance
 
 ## Notebook Sections
 
-1. **Setup & Imports** - Required libraries
-2. **Data Functions** - M5 data transformation and metric functions
-3. **Load M5 Data** - Load sales data and preprocessing
-4. **Create Train/Test Split** - Standard M5 split (1941 days train, 28 days test)
-5. **Configure Models** - Define StatsForecast and NeuralForecast models
-6. **Train StatsForecast Models** - Classical statistical models (ARIMA, Theta, etc.)
-7. **Train NeuralForecast Models** - Deep learning models (optional, currently disabled)
-8. **Evaluate Performance** - Compute RMSE and MAPE scores
-9. **Results Summary** - Display model rankings
-10. **Save Results** - Export forecasts and scores to CSV
+1. **Setup & Imports** - Required libraries and directory setup
+2. **Load M5 Data** - Fetch M5 dataset and aggregate to weekly
+3. **Configure Models** - Define 7 competing models
+4. **Train StatsForecast Models** - Cross-validation training on 500 time series
+5. **Evaluate Performance** - MAE, bias, and relative MAE metrics
+6. **Performance Visualization** - Plot model performance over time
 
-## M5 Dataset
+## Dataset
 
-- **Time series**: ~30,000 product-store combinations
-- **Frequency**: Daily sales data
-- **Horizon**: 28-day forecasts
-- **Train period**: 1,941 days (Jan 2011 - Dec 2015)
-- **Test period**: 28 days (Jan 2016)
+- **Source**: M5 Kaggle Competition (via datasetsforecast)
+- **Time series**: 30,000+ product-store combinations
+- **Frequency**: Daily sales (aggregated to **weekly** in this project)
+- **Train period**: Full historical data available
+- **Evaluation**: 4-window cross-validation with 13-week forecast horizon
 
-## Models
+## Models Implemented
 
-### StatsForecast (Classical)
-- AutoARIMA - Automatic ARIMA selection
-- AutoTheta - Automatic Theta selection
-- NaiveSeasonality - Seasonal naive baseline
+| Model | Type | Description |
+|-------|------|-------------|
+| **SeasonalNaive** | Baseline | Uses sales from 52 weeks prior (seasonal period) |
+| **SESOpt** | Exponential Smoothing | Simple Exponential Smoothing - Optimized |
+| **SeasonalNaiveWDrift** | Baseline | Seasonal Naive with drift component |
+| **LocalLevel** | PyDLM | Local level model (degree=0, discount=0.8) |
+| **LevelTrend** | PyDLM | Level + trend components (degree=1, discount=0.98) |
+| **LevelMonthlySeasonal** | PyDLM | Level + monthly seasonality (discount=0.995) |
+| **LevelTrendSeasonal** | PyDLM | Level + trend + 52-week seasonality (discount=0.995) |
 
-### NeuralForecast (Deep Learning, Optional)
-- DLinear - Deep linear model with trainable basis functions
+## Evaluation Metrics
 
-## Metrics
+- **MAE** - Mean Absolute Error (units of sales)
+- **Bias** - Average directional error (over/under forecasting)
+- **RMAE** - Relative MAE vs SESOpt baseline (benchmark: 90% of M5 contestants couldn't beat this)
 
-- **RMSE** - Root Mean Squared Error (scale-dependent)
-- **MAPE** - Mean Absolute Percentage Error (scale-free)
+## Key Findings
 
-## Output Files
+- SESOpt consistently performs well as a baseline
+- Dynamic Linear Models with appropriate components competitive
+- Weekly aggregation reduces data sparsity vs daily forecasting
 
-- `forecasts_vs_actuals.csv` - Full test set with predictions and actual values
-- `model_scores.csv` - RMSE and MAPE scores by model
-- `raw_forecasts.csv` - Raw forecast dataframe
+## Output
+
+Results are generated during notebook execution:
+- Cross-validation forecasts with actual vs predicted values
+- Performance metrics by model and cutoff period
+- Visualizations of MAE + Bias over time
+
+## Project Structure
+
+```
+statsforecast-diy_medium/
+├── m5_training.ipynb              # Main notebook (source of truth)
+├── README.md                       # This file
+├── requirements.txt                # Python dependencies
+├── pyproject.toml                  # Poetry configuration
+├── models.py                       # Custom model implementations
+├── config.py                       # Configuration settings
+├── setup.py                        # Package setup
+├── setup.sh                        # Shell setup script
+├── .env.example                    # Environment template
+├── data/                           # M5 data (auto-downloaded)
+└── results/                        # Output directory (auto-created)
+```
+
+## Requirements
+
+See `requirements.txt` or `pyproject.toml`. Key dependencies:
+- statsforecast
+- datasetsforecast
+- pandas, numpy
+- PyDLM (for dynamic linear models)
+- matplotlib (visualization)
+
+## License
+
+Open for educational and research purposes.
